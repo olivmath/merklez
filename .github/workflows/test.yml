@@ -1,14 +1,14 @@
-name: CI Tests
+name: CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: ["**"]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: ["**"]
 
 jobs:
   test:
-    name: Run Nargo Tests
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -23,14 +23,14 @@ jobs:
       - name: Check Nargo version
         run: nargo --version
 
-      - name: Check syntax and compile
+      - name: Check syntax
         run: nargo check
 
       - name: Run tests
-        run: nargo test
+        run: nargo test --show-output
 
-  lint:
-    name: Check Formatting
+  format:
+    name: Format
     runs-on: ubuntu-latest
 
     steps:
