@@ -19,7 +19,7 @@ Add this to your `Nargo.toml`:
 
 ```toml
 [dependencies]
-merklez = { git = "https://github.com/olivmath/merklez" }
+merklez = { tag = "0.2.0", git = "https://github.com/olivmath/merklez" }
 ```
 
 Or use it as a local dependency:
