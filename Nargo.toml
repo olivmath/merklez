@@ -1,0 +1,4 @@
+[package]
+name = "merklez"
+type = "lib"
+authors = ["olivmath"]
