@@ -1,0 +1,68 @@
+use crate::types::{Hash, Leaf, HashFn};
+use crate::side::Side;
+use crate::node::Node;
+use crate::proof::Proof;
+
+pub fn merkle_proof<let N: u32, let P: u32>(
+    leaves: [Leaf; N],
+    leaves_len: u32,
+    leaf_index: u32,
+    hash_fn: HashFn,
+) -> Proof<P> {
+    assert(leaves_len > 0, "Must have at least one leaf");
+    assert(leaf_index < leaves_len, "Leaf index out of bounds");
+
+    let mut proof = Proof::new();
+    let single_leaf = leaves_len == 1;
+
+    if !single_leaf {
+        let zero_hash: Hash = [0; 32];
+        let mut current_level: [Hash; N] = [zero_hash; N];
+        let mut current_len = leaves_len;
+        let mut current_index = leaf_index;
+
+        for i in 0..N {
+            if i < leaves_len { current_level[i] = leaves[i]; }
+        }
+
+        for _level in 0..N {
+            if current_len > 1 {
+                let mut next_level: [Hash; N] = [zero_hash; N];
+                let mut next_len: u32 = 0;
+                let mut new_index = current_index;
+
+                for i in 0..N {
+                    let pair_index = i * 2;
+                    if pair_index < current_len {
+                        if pair_index + 1 < current_len {
+                            let left = current_level[pair_index];
+                            let right = current_level[pair_index + 1];
+
+                            if (current_index == pair_index) | (current_index == pair_index + 1) {
+                                if current_index == pair_index {
+                                    proof.push(Node::new(right, Side::right()));
+                                } else {
+                                    proof.push(Node::new(left, Side::left()));
+                                }
+                                new_index = next_len;
+                            }
+
+                            next_level[next_len] = hash_fn(left, right);
+                            next_len += 1;
+                        } else {
+                            next_level[next_len] = current_level[pair_index];
+                            if current_index == pair_index { new_index = next_len; }
+                            next_len += 1;
+                        }
+                    }
+                }
+
+                current_level = next_level;
+                current_len = next_len;
+                current_index = new_index;
+            }
+        }
+    }
+
+    proof
+}
