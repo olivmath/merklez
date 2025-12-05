@@ -113,19 +113,6 @@ fn is_power_of_2(n: u32) -> bool {
     (n != 0) & ((n & (n - 1)) == 0)
 }
 
-/// Calculates the next power of 2
-fn next_power_of_2(n: u32) -> u32 {
-    if n == 0 {
-        1
-    } else {
-        let mut power = 1;
-        while power < n {
-            power *= 2;
-        }
-        power
-    }
-}
-
 // ============================================================================
 // Merkle Root Calculation
 // ============================================================================
@@ -147,48 +134,57 @@ pub fn merkle_root<let N: u32>(
     assert(leaves_len > 0, "Must have at least one leaf");
     assert(leaves_len <= N, "leaves_len exceeds array size");
 
-    if leaves_len == 1 {
-        return leaves[0];
-    }
+    let mut result = leaves[0];
 
-    // Create working array for current level
-    let mut current_level: [Hash; N] = [0; 32];
-    let mut current_len = leaves_len;
+    // Handle single leaf case
+    let single_leaf = leaves_len == 1;
+    if !single_leaf {
+        // Create working arrays for current level
+        let zero_hash: Hash = [0; 32];
+        let mut current_level: [Hash; N] = [zero_hash; N];
+        let mut current_len = leaves_len;
 
-    // Copy leaves to current level
-    for i in 0..N {
-        if i < leaves_len {
-            current_level[i] = leaves[i];
-        }
-    }
-
-    // Build tree level by level
-    while current_len > 1 {
-        let mut next_level: [Hash; N] = [0; 32];
-        let mut next_len = 0;
-
-        let mut i = 0;
-        while i < current_len {
-            if i + 1 < current_len {
-                // Hash pair
-                let left = current_level[i];
-                let right = current_level[i + 1];
-                next_level[next_len] = hash_fn(left, right);
-                next_len += 1;
-                i += 2;
-            } else {
-                // Odd one out, copy as is
-                next_level[next_len] = current_level[i];
-                next_len += 1;
-                i += 1;
+        // Copy leaves to current level
+        for i in 0..N {
+            if i < leaves_len {
+                current_level[i] = leaves[i];
             }
         }
 
-        current_level = next_level;
-        current_len = next_len;
+        // Build tree level by level
+        // Maximum number of levels is log2(N) + 1, but we use N as safe upper bound
+        for _level in 0..N {
+            if current_len > 1 {
+                let mut next_level: [Hash; N] = [zero_hash; N];
+                let mut next_len: u32 = 0;
+
+                // Process pairs
+                for i in 0..N {
+                    let pair_index = i * 2;
+                    if pair_index < current_len {
+                        if pair_index + 1 < current_len {
+                            // Hash pair
+                            let left = current_level[pair_index];
+                            let right = current_level[pair_index + 1];
+                            next_level[next_len] = hash_fn(left, right);
+                            next_len += 1;
+                        } else {
+                            // Odd one out, copy as is
+                            next_level[next_len] = current_level[pair_index];
+                            next_len += 1;
+                        }
+                    }
+                }
+
+                current_level = next_level;
+                current_len = next_len;
+            }
+        }
+
+        result = current_level[0];
     }
 
-    current_level[0]
+    result
 }
 
 // ============================================================================
@@ -216,69 +212,70 @@ pub fn merkle_proof<let N: u32, let P: u32>(
 
     let mut proof = Proof::new();
 
-    if leaves_len == 1 {
-        return proof;
-    }
+    // Handle single leaf case - no proof needed
+    let single_leaf = leaves_len == 1;
 
-    // Create working array for current level
-    let mut current_level: [Hash; N] = [0; 32];
-    let mut current_len = leaves_len;
-    let mut current_index = leaf_index;
+    if !single_leaf {
+        // Create working array for current level
+        let zero_hash: Hash = [0; 32];
+        let mut current_level: [Hash; N] = [zero_hash; N];
+        let mut current_len = leaves_len;
+        let mut current_index = leaf_index;
 
-    // Copy leaves to current level
-    for i in 0..N {
-        if i < leaves_len {
-            current_level[i] = leaves[i];
-        }
-    }
-
-    // Build proof by traversing up the tree
-    while current_len > 1 {
-        let mut next_level: [Hash; N] = [0; 32];
-        let mut next_len = 0;
-
-        let mut i = 0;
-        while i < current_len {
-            if i + 1 < current_len {
-                // Hash pair
-                let left = current_level[i];
-                let right = current_level[i + 1];
-
-                // If this pair contains our target index, add sibling to proof
-                if (current_index == i) | (current_index == i + 1) {
-                    if current_index == i {
-                        // Our node is on the left, sibling is on the right
-                        proof.push(Node::new(right, Side::right()));
-                    } else {
-                        // Our node is on the right, sibling is on the left
-                        proof.push(Node::new(left, Side::left()));
-                    }
-                }
-
-                next_level[next_len] = hash_fn(left, right);
-
-                // Update index for next level
-                if (current_index == i) | (current_index == i + 1) {
-                    current_index = next_len;
-                }
-
-                next_len += 1;
-                i += 2;
-            } else {
-                // Odd one out
-                next_level[next_len] = current_level[i];
-
-                if current_index == i {
-                    current_index = next_len;
-                }
-
-                next_len += 1;
-                i += 1;
+        // Copy leaves to current level
+        for i in 0..N {
+            if i < leaves_len {
+                current_level[i] = leaves[i];
             }
         }
 
-        current_level = next_level;
-        current_len = next_len;
+        // Build proof by traversing up the tree
+        // Maximum number of levels is log2(N) + 1, but we use N as safe upper bound
+        for _level in 0..N {
+            if current_len > 1 {
+                let mut next_level: [Hash; N] = [zero_hash; N];
+                let mut next_len: u32 = 0;
+                let mut new_index = current_index;
+
+                // Process pairs
+                for i in 0..N {
+                    let pair_index = i * 2;
+                    if pair_index < current_len {
+                        if pair_index + 1 < current_len {
+                            // Hash pair
+                            let left = current_level[pair_index];
+                            let right = current_level[pair_index + 1];
+
+                            // If this pair contains our target index, add sibling to proof
+                            if (current_index == pair_index) | (current_index == pair_index + 1) {
+                                if current_index == pair_index {
+                                    // Our node is on the left, sibling is on the right
+                                    proof.push(Node::new(right, Side::right()));
+                                } else {
+                                    // Our node is on the right, sibling is on the left
+                                    proof.push(Node::new(left, Side::left()));
+                                }
+                                new_index = next_len;
+                            }
+
+                            next_level[next_len] = hash_fn(left, right);
+                            next_len += 1;
+                        } else {
+                            // Odd one out
+                            next_level[next_len] = current_level[pair_index];
+                            if current_index == pair_index {
+                                new_index = next_len;
+                            }
+                            next_len += 1;
+                        }
+                    }
+                }
+
+                current_level = next_level;
+                current_len = next_len;
+                current_index = new_index;
+            }
+        }
     }
 
     proof
@@ -395,4 +392,54 @@ fn test_merkle_proof_and_verify() {
     // Verify proof
     let computed_root = merkle_proof_check(proof, leaf1, test_hash_fn);
     assert(computed_root == root);
+}
+
+#[test]
+fn test_merkle_root_four_leaves() {
+    let mut leaf1: Hash = [0; 32];
+    let mut leaf2: Hash = [0; 32];
+    let mut leaf3: Hash = [0; 32];
+    let mut leaf4: Hash = [0; 32];
+
+    leaf1[0] = 1;
+    leaf2[0] = 2;
+    leaf3[0] = 3;
+    leaf4[0] = 4;
+
+    let leaves: [Leaf; 4] = [leaf1, leaf2, leaf3, leaf4];
+    let root = merkle_root(leaves, 4, test_hash_fn);
+
+    // Manually calculate expected root
+    let hash12 = test_hash_fn(leaf1, leaf2);
+    let hash34 = test_hash_fn(leaf3, leaf4);
+    let expected = test_hash_fn(hash12, hash34);
+
+    assert(root == expected);
+}
+
+#[test]
+fn test_merkle_proof_four_leaves() {
+    let mut leaf1: Hash = [0; 32];
+    let mut leaf2: Hash = [0; 32];
+    let mut leaf3: Hash = [0; 32];
+    let mut leaf4: Hash = [0; 32];
+
+    leaf1[0] = 1;
+    leaf2[0] = 2;
+    leaf3[0] = 3;
+    leaf4[0] = 4;
+
+    let leaves: [Leaf; 4] = [leaf1, leaf2, leaf3, leaf4];
+    let root = merkle_root(leaves, 4, test_hash_fn);
+
+    // Test proof for each leaf
+    let proof0: Proof<8> = merkle_proof(leaves, 4, 0, test_hash_fn);
+    let proof1: Proof<8> = merkle_proof(leaves, 4, 1, test_hash_fn);
+    let proof2: Proof<8> = merkle_proof(leaves, 4, 2, test_hash_fn);
+    let proof3: Proof<8> = merkle_proof(leaves, 4, 3, test_hash_fn);
+
+    assert(merkle_proof_check(proof0, leaf1, test_hash_fn) == root);
+    assert(merkle_proof_check(proof1, leaf2, test_hash_fn) == root);
+    assert(merkle_proof_check(proof2, leaf3, test_hash_fn) == root);
+    assert(merkle_proof_check(proof3, leaf4, test_hash_fn) == root);
 }
