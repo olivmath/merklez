@@ -115,7 +115,8 @@ fn test_merkle_tree_static_verify() {
     let proof: Proof<8> = tree.make_proof(leaf1);
 
     // Static verification with known root
-    let is_valid = MerkleTree::static_verify_merkle_proof(
+    // Note: Need to specify type parameter N even though it's not used
+    let is_valid = MerkleTree::<2>::static_verify_merkle_proof(
         leaf1,
         proof,
         tree.root,
