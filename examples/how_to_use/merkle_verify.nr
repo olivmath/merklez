@@ -15,4 +15,8 @@ fn main() {
     // Step 4: Calculate if proof is valid
     let result = mtree.verify_merkle_proof(leaf, proof);
     assert(result, true);
+
+    // Step 4': Calculate if proof is valid [Static Mode]
+    let result2 = mtree.static_verify_merkle_proof(leaf, proof, mtree.root, sha256);
+    assert(result2, true);
 }
