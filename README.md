@@ -6,11 +6,12 @@ A Merkle Tree implementation in Noir - Port from the Rust library [merkletreers]
 
 ## Features
 
-- ✅ **No default hash function** - You provide your own hash function
-- ✅ **No external dependencies** - Pure Noir implementation
-- ✅ **Merkle root calculation** - Build merkle trees from leaves
-- ✅ **Proof generation** - Generate merkle proofs for any leaf
-- ✅ **Proof verification** - Verify merkle proofs against a root
+- **No default hash function** - You provide your own hash function (Poseidon, Pedersen, SHA256, etc.)
+- **No external dependencies** - Pure Noir implementation
+- **Merkle root calculation** - Build merkle trees from leaves
+- **Proof generation** - Generate merkle proofs for any leaf
+- **Proof verification** - Verify merkle proofs against a root
+- **High-level API** - `MerkleTree` struct for convenient usage
 
 ## Installation
 
@@ -28,18 +29,16 @@ Or use it as a local dependency:
 merklez = { path = "../merklez" }
 ```
 
-## Usage
+## Quick Start
 
-### Basic Example
+### 1. Calculate Merkle Root
 
 ```noir
-use merklez::{Hash, Leaf, Root, merkle_root, merkle_proof, merkle_proof_check, Proof};
+use merklez::{MerkleTree, Hash, Leaf};
 
-// Define your own hash function
-fn my_hash_function(left: Hash, right: Hash) -> Hash {
-    // Your hash implementation here
-    // Example: Poseidon, Pedersen, SHA256, etc.
-    // This is just a placeholder
+// Define your hash function
+fn my_hash(left: Hash, right: Hash) -> Hash {
+    // Use your preferred hash: Poseidon, Pedersen, SHA256, etc.
     let mut result: Hash = [0; 32];
     for i in 0..32 {
         result[i] = left[i] ^ right[i];
@@ -48,62 +47,155 @@ fn my_hash_function(left: Hash, right: Hash) -> Hash {
 }
 
 fn main() {
-    // Create some leaves
-    let mut leaf1: Hash = [0; 32];
-    let mut leaf2: Hash = [0; 32];
-    let mut leaf3: Hash = [0; 32];
-    let mut leaf4: Hash = [0; 32];
+    // Create leaves
+    let mut leaf_a: Hash = [0; 32]; leaf_a[0] = 1;
+    let mut leaf_b: Hash = [0; 32]; leaf_b[0] = 2;
+    let mut leaf_c: Hash = [0; 32]; leaf_c[0] = 3;
+    let mut leaf_d: Hash = [0; 32]; leaf_d[0] = 4;
 
-    leaf1[0] = 1;
-    leaf2[0] = 2;
-    leaf3[0] = 3;
-    leaf4[0] = 4;
+    let leaves: [Leaf; 4] = [leaf_a, leaf_b, leaf_c, leaf_d];
 
-    let leaves: [Leaf; 4] = [leaf1, leaf2, leaf3, leaf4];
+    // Build tree and get root
+    let tree = MerkleTree::new(leaves, my_hash);
+    let root = tree.root; // The merkle root hash
+}
+```
 
-    // Calculate merkle root
-    let root = merkle_root(leaves, 4, my_hash_function);
+### 2. Generate Merkle Proof
 
-    // Generate proof for leaf at index 0
-    let proof: Proof<8> = merkle_proof(leaves, 4, 0, my_hash_function);
+```noir
+use merklez::{MerkleTree, Proof, Hash, Leaf};
 
-    // Verify the proof
-    let computed_root = merkle_proof_check(proof, leaf1, my_hash_function);
+fn main() {
+    // ... create leaves and tree as above ...
+    let tree = MerkleTree::new(leaves, my_hash);
 
+    // Generate proof for a specific leaf
+    let proof: Proof<8> = tree.make_proof(leaf_c);
+
+    // The proof contains sibling nodes needed to reconstruct the root
+    // proof.len -> number of nodes in proof path
+    // proof.nodes -> array of Node { data: Hash, side: Side }
+}
+```
+
+### 3. Verify Merkle Proof
+
+```noir
+use merklez::{MerkleTree, Proof, Hash, Leaf};
+
+fn main() {
+    // ... create tree and proof ...
+    let tree = MerkleTree::new(leaves, my_hash);
+    let proof: Proof<8> = tree.make_proof(leaf_c);
+
+    // Verify proof against the tree
+    let is_valid: bool = tree.verify_merkle_proof(leaf_c, proof);
+    assert(is_valid);
+}
+```
+
+## Proof Types
+
+### Membership Proof (Public Root)
+
+Prove that an element belongs to a set without revealing other elements. The root is public, leaf and proof are private.
+
+```noir
+use merklez::{Proof, merkle_proof_check, Hash};
+
+// Circuit inputs: root is public, leaf and proof are private
+fn main(pub root: Hash, leaf: Hash, proof: Proof<8>) {
+    // Verify the leaf is part of the tree with this root
+    let computed_root = merkle_proof_check(proof, leaf, my_hash);
     assert(computed_root == root);
 }
 ```
 
-### Using with Poseidon Hash
+**Use cases:**
+- Whitelist verification (prove you're on an allowlist)
+- Airdrop eligibility (prove you qualify without revealing all recipients)
+- Anonymous voting (prove you're a registered voter)
+
+### Membership Proof (Private Root)
+
+Both root and leaf are private. Useful for proving knowledge of a valid set membership.
 
 ```noir
-use merklez::{Hash, Leaf, merkle_root, merkle_proof, merkle_proof_check};
-use std::hash::poseidon;
+use merklez::{Proof, merkle_proof_check, Hash};
 
-// Wrapper to convert Poseidon hash to our Hash type
-fn poseidon_hash(left: Hash, right: Hash) -> Hash {
-    // Convert to Field array
-    let mut inputs: [Field; 64] = [0; 64];
-    for i in 0..32 {
-        inputs[i] = left[i] as Field;
-        inputs[i + 32] = right[i] as Field;
-    }
-
-    // Hash with Poseidon
-    let hash_field = poseidon::bn254::hash_64(inputs);
-
-    // Convert back to bytes
-    let mut result: Hash = [0; 32];
-    let bytes = hash_field.to_be_bytes(32);
-    for i in 0..32 {
-        result[i] = bytes[i];
-    }
-    result
+fn main(leaf: Hash, proof: Proof<8>, root: Hash) {
+    // All inputs are private
+    let computed_root = merkle_proof_check(proof, leaf, my_hash);
+    assert(computed_root == root);
 }
+```
+
+### Static Verification (Without Tree Instance)
+
+Verify a proof when you only have the root hash (no need to rebuild the tree).
+
+```noir
+use merklez::{MerkleTree, Proof, Hash, Leaf};
+
+fn main(root: Hash, leaf: Hash, proof: Proof<8>) {
+    // Static verification - no tree instance needed
+    let is_valid = MerkleTree::<4>::static_verify_merkle_proof(
+        leaf,
+        proof,
+        root,
+        my_hash
+    );
+    assert(is_valid);
+}
+```
+
+### Exclusion Proof (Non-Membership)
+
+Prove an element is NOT in a sorted merkle tree by showing its position would be between two adjacent leaves.
+
+```noir
+use merklez::{MerkleTree, Proof, Hash, Leaf};
+
+fn main(
+    pub root: Hash,
+    target: Hash,           // Element to prove is NOT in tree
+    left_neighbor: Hash,    // Element just before target position
+    right_neighbor: Hash,   // Element just after target position
+    proof_left: Proof<8>,
+    proof_right: Proof<8>
+) {
+    // Verify both neighbors are in the tree
+    let left_valid = merkle_proof_check(proof_left, left_neighbor, my_hash);
+    let right_valid = merkle_proof_check(proof_right, right_neighbor, my_hash);
+    assert(left_valid == root);
+    assert(right_valid == root);
+
+    // Verify target would be between neighbors (tree must be sorted)
+    assert(left_neighbor < target);
+    assert(target < right_neighbor);
+}
+```
+
+## Low-Level API
+
+For more control, use the functions directly instead of `MerkleTree`:
+
+```noir
+use merklez::{merkle_root, merkle_proof, merkle_proof_check, Proof, Hash, Leaf};
 
 fn main() {
-    let leaves: [Leaf; 4] = [...];
-    let root = merkle_root(leaves, 4, poseidon_hash);
+    let leaves: [Leaf; 4] = [leaf_a, leaf_b, leaf_c, leaf_d];
+
+    // Calculate root directly
+    let root = merkle_root(leaves, 4, my_hash);
+
+    // Generate proof for leaf at index 2
+    let proof: Proof<8> = merkle_proof(leaves, 4, 2, my_hash);
+
+    // Verify proof
+    let computed = merkle_proof_check(proof, leaf_c, my_hash);
+    assert(computed == root);
 }
 ```
 
@@ -261,11 +353,15 @@ nargo test
 
 ## Examples
 
-See the `examples/` directory for more usage examples:
+See the [`examples/`](./examples/) directory for more usage examples:
 
-- `basic.nr` - Simple merkle tree
-- `poseidon.nr` - Using Poseidon hash
-- `large_tree.nr` - Larger tree with many leaves
+**Basic Usage** (`how_to_use/`):
+- `merkle_root.nr` - Calculate merkle root from leaves
+- `merkle_proof.nr` - Generate merkle proofs for elements
+- `merkle_verify.nr` - Verify merkle proofs
+
+**ZK Proof Patterns** (`how_to_proof/`):
+- `membership_public_root.nr` - Membership proof with public root (whitelist, airdrops, voting)
 
 ## Contributing
 
