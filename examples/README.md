@@ -1,60 +1,142 @@
 # merklez Examples
 
-This directory contains example usage of the merklez library.
+This directory contains practical examples of using the merklez library.
 
-## Examples
+## Directory Structure
 
-### basic_usage.nr
-
-A simple example showing:
-- How to create leaves
-- How to calculate merkle root
-- How to generate proofs
-- How to verify proofs
-
-This example uses a simple XOR-based hash function for demonstration. **Do not use this in production!**
-
-### Running Examples
-
-To run an example, you need to have Nargo installed. Then:
-
-```bash
-# Create a new Nargo project
-nargo new my_merkle_project
-cd my_merkle_project
-
-# Copy the example code to src/main.nr
-cp ../merklez/examples/basic_usage.nr src/main.nr
-
-# Add merklez as a dependency in Nargo.toml
-# [dependencies]
-# merklez = { path = "../merklez" }
-
-# Run the project
-nargo execute
+```
+examples/
+├── how_to_use/           # Basic usage examples
+│   ├── merkle_root.nr    # Calculate merkle root
+│   ├── merkle_proof.nr   # Generate merkle proofs
+│   └── merkle_verify.nr  # Verify merkle proofs
+├── how_to_proof/         # ZK proof patterns
+│   └── membership_public_root.nr  # Membership proof with public root
+└── README.md
 ```
 
-## Using with Cryptographic Hash Functions
+## How to Use Examples
 
-For production use, you should use a cryptographically secure hash function optimized for zero-knowledge proofs:
+### `how_to_use/merkle_root.nr`
 
-### Poseidon (Recommended for zk-SNARKs)
+Calculate the merkle root from a list of leaves:
+
+```noir
+use merklez::{MerkleTree, Hash, Leaf};
+
+fn main() {
+    // Create leaves (hashes of your data)
+    let leaves: [Leaf; 5] = [
+        sha256("a"),
+        sha256("b"),
+        sha256("c"),
+        sha256("d"),
+        sha256("e")
+    ];
+
+    // Build tree
+    let tree = MerkleTree::new(leaves, sha256);
+
+    // Get the root
+    let root: Hash = tree.root;
+}
+```
+
+### `how_to_use/merkle_proof.nr`
+
+Generate a merkle proof for a specific leaf:
+
+```noir
+use merklez::{MerkleTree, Proof, Node, Side, Hash, Leaf};
+
+fn main() {
+    let leaves: [Leaf; 5] = [...];
+    let tree = MerkleTree::new(leaves, sha256);
+
+    // Generate proof for element 'c'
+    let leaf_c: Hash = sha256("c");
+    let proof: Proof<8> = tree.make_proof(leaf_c);
+
+    // The proof contains:
+    // - proof.nodes: Array of sibling hashes
+    // - proof.len: Number of nodes in the proof
+    // Each node has:
+    // - node.data: The sibling hash
+    // - node.side: Side::left() or Side::right()
+}
+```
+
+### `how_to_use/merkle_verify.nr`
+
+Verify a merkle proof:
+
+```noir
+use merklez::{MerkleTree, Proof, Hash, Leaf};
+
+fn main() {
+    let leaves: [Leaf; 5] = [...];
+    let tree = MerkleTree::new(leaves, sha256);
+
+    let leaf_c: Hash = sha256("c");
+    let proof: Proof<8> = tree.make_proof(leaf_c);
+
+    // Method 1: Verify using tree instance
+    let is_valid: bool = tree.verify_merkle_proof(leaf_c, proof);
+    assert(is_valid);
+
+    // Method 2: Static verification (no tree needed)
+    let is_valid_static = MerkleTree::<5>::static_verify_merkle_proof(
+        leaf_c,
+        proof,
+        tree.root,
+        sha256
+    );
+    assert(is_valid_static);
+}
+```
+
+## How to Proof Examples
+
+### `how_to_proof/membership_public_root.nr`
+
+**Membership Proof with Public Root** - The most common ZK pattern.
+
+This proves that a secret leaf belongs to a merkle tree with a known (public) root, without revealing which leaf it is.
+
+```noir
+use merklez::{Proof, merkle_proof_check, Hash};
+
+// pub root = public input (verifier knows this)
+// leaf = private input (only prover knows)
+// proof = private input (only prover knows)
+fn main(pub root: Hash, leaf: Hash, proof: Proof<3>) {
+    let computed = merkle_proof_check(proof, leaf, sha256);
+    assert(computed == root);
+}
+```
+
+**Use cases:**
+- **Whitelist verification**: Prove you're on an allowlist without revealing your identity
+- **Airdrop claims**: Prove eligibility without exposing the full recipient list
+- **Anonymous voting**: Prove you're a registered voter without revealing who you are
+- **Private membership**: Prove membership in a group without revealing the group members
+
+## Hash Function Examples
+
+### Poseidon (Recommended for ZK)
 
 ```noir
 use std::hash::poseidon;
 
-fn poseidon_merkle_hash(left: Hash, right: Hash) -> Hash {
-    // Convert bytes to Fields
+fn poseidon_hash(left: Hash, right: Hash) -> Hash {
     let mut inputs: [Field; 64] = [0; 64];
     for i in 0..32 {
         inputs[i] = left[i] as Field;
         inputs[i + 32] = right[i] as Field;
     }
 
-    // Hash
     let result = poseidon::bn254::hash_64(inputs);
 
-    // Convert back to bytes
     let mut hash: Hash = [0; 32];
     let bytes = result.to_be_bytes(32);
     for i in 0..32 {
@@ -64,68 +146,74 @@ fn poseidon_merkle_hash(left: Hash, right: Hash) -> Hash {
 }
 ```
 
+### Keccak256 (Ethereum compatible)
+
+```noir
+use std::hash::keccak256;
+
+fn keccak_hash(left: Hash, right: Hash) -> Hash {
+    let mut input: [u8; 64] = [0; 64];
+    for i in 0..32 {
+        input[i] = left[i];
+        input[i + 32] = right[i];
+    }
+    keccak256(input, 64)
+}
+```
+
 ### Pedersen
 
 ```noir
 use std::hash::pedersen_hash;
 
 fn pedersen_merkle_hash(left: Hash, right: Hash) -> Hash {
-    // Convert bytes to Fields
     let left_field = bytes_to_field(left);
     let right_field = bytes_to_field(right);
-
-    // Hash
     let result = pedersen_hash([left_field, right_field]);
-
-    // Convert back to bytes
     field_to_bytes(result)
 }
 ```
 
-### Keccak (like the original Rust library)
-
-```noir
-use std::hash::keccak256;
-
-fn keccak_merkle_hash(left: Hash, right: Hash) -> Hash {
-    let mut input: [u8; 64] = [0; 64];
-
-    // Concatenate left and right
-    for i in 0..32 {
-        input[i] = left[i];
-        input[i + 32] = right[i];
-    }
-
-    // Hash
-    keccak256(input, 64)
-}
-```
-
-## Performance Considerations
-
-Different hash functions have different costs in terms of constraints:
+## Performance Guide
 
 | Hash Function | Constraints | Best For |
 |---------------|-------------|----------|
-| Poseidon | Low | zk-SNARKs (Recommended) |
-| Pedersen | Low | Elliptic curve based systems |
-| MiMC | Low | Alternative to Poseidon |
-| Keccak | High | Ethereum compatibility |
-| SHA256 | Very High | Bitcoin compatibility |
+| Poseidon | ~300 | zk-SNARKs (Recommended) |
+| Pedersen | ~1000 | Elliptic curve systems |
+| Keccak256 | ~30000 | Ethereum compatibility |
+| SHA256 | ~25000 | Bitcoin compatibility |
 
-For Noir circuits, **Poseidon** is typically the best choice as it's optimized for zk-SNARKs and has the lowest constraint count.
+## Proof Size Guide
 
-## Tips
+Choose `Proof<N>` where N >= ceil(log2(num_leaves)):
 
-1. **Choose the right proof size**: The `Proof<N>` generic parameter should be at least `log2(num_leaves)` rounded up. For example:
-   - 1-2 leaves: `Proof<1>`
-   - 3-4 leaves: `Proof<2>`
-   - 5-8 leaves: `Proof<3>`
-   - 9-16 leaves: `Proof<4>`
-   - etc.
+| Leaves | Minimum N |
+|--------|-----------|
+| 1-2 | 1 |
+| 3-4 | 2 |
+| 5-8 | 3 |
+| 9-16 | 4 |
+| 17-32 | 5 |
+| 33-64 | 6 |
+| 65-128 | 7 |
+| 129-256 | 8 |
 
-2. **Pre-allocate arrays**: Noir requires fixed-size arrays, so plan your maximum tree size in advance.
+**Tip:** Use a larger N than minimum for safety margin.
 
-3. **Batch verification**: If verifying multiple proofs, consider batching them in a single circuit for efficiency.
+## Running Examples
 
-4. **Test thoroughly**: Always test your hash function integration with known test vectors.
+```bash
+# Create a new project
+nargo new my_project
+cd my_project
+
+# Add merklez to Nargo.toml
+echo '[dependencies]
+merklez = { git = "https://github.com/olivmath/merklez" }' >> Nargo.toml
+
+# Copy example code to src/main.nr
+cp /path/to/merklez/examples/how_to_use/merkle_root.nr src/main.nr
+
+# Execute
+nargo execute
+```
