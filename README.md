@@ -1,5 +1,7 @@
 # merklez
 
+[![CI Tests](https://github.com/olivmath/merklez/actions/workflows/test.yml/badge.svg)](https://github.com/olivmath/merklez/actions/workflows/test.yml)
+
 A Merkle Tree implementation in Noir - Port from the Rust library [merkletreers](https://github.com/olivmath/merkletreers).
 
 ## Features
