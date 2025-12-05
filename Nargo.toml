@@ -1,4 +1,5 @@
 [package]
 name = "merklez"
+version = "0.2.0"
 type = "lib"
 authors = ["olivmath"]
