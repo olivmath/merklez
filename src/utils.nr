@@ -5,8 +5,13 @@
 /// Checks if a number is a power of 2
 /// Uses bit manipulation: n & (n-1) clears the lowest set bit
 /// For powers of 2, there's only one set bit, so the result is 0
+/// Note: Returns false for n == 0
 pub fn is_power_of_2(n: u32) -> bool {
-    (n != 0) & ((n & (n - 1)) == 0)
+    if n == 0 {
+        false
+    } else {
+        (n & (n - 1)) == 0
+    }
 }
 
 // =============================================================================
