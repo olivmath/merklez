@@ -21,7 +21,7 @@ pub type Root = Hash;
 
 /// Represents the position of a node in the tree
 pub struct Side {
-    pub value: u8
+    pub value: u8,
 }
 
 impl Side {
@@ -54,7 +54,7 @@ impl Side {
 /// Node represents a leaf in the merkle proof
 pub struct Node {
     pub data: Hash,
-    pub side: Side
+    pub side: Side,
 }
 
 impl Node {
@@ -71,17 +71,14 @@ impl Node {
 /// Using a bounded array instead of Vec
 pub struct Proof<let N: u32> {
     pub nodes: [Node; N],
-    pub len: u32
+    pub len: u32,
 }
 
 impl<let N: u32> Proof<N> {
     pub fn new() -> Self {
         let empty_hash: Hash = [0; 32];
         let empty_node = Node::new(empty_hash, Side::left());
-        Proof {
-            nodes: [empty_node; N],
-            len: 0
-        }
+        Proof { nodes: [empty_node; N], len: 0 }
     }
 
     pub fn push(&mut self, node: Node) {
@@ -126,11 +123,7 @@ fn is_power_of_2(n: u32) -> bool {
 ///
 /// # Returns
 /// The merkle root hash
-pub fn merkle_root<let N: u32>(
-    leaves: [Leaf; N],
-    leaves_len: u32,
-    hash_fn: HashFn
-) -> Root {
+pub fn merkle_root<let N: u32>(leaves: [Leaf; N], leaves_len: u32, hash_fn: HashFn) -> Root {
     assert(leaves_len > 0, "Must have at least one leaf");
     assert(leaves_len <= N, "leaves_len exceeds array size");
 
@@ -205,7 +198,7 @@ pub fn merkle_proof<let N: u32, let P: u32>(
     leaves: [Leaf; N],
     leaves_len: u32,
     leaf_index: u32,
-    hash_fn: HashFn
+    hash_fn: HashFn,
 ) -> Proof<P> {
     assert(leaves_len > 0, "Must have at least one leaf");
     assert(leaf_index < leaves_len, "Leaf index out of bounds");
@@ -294,11 +287,7 @@ pub fn merkle_proof<let N: u32, let P: u32>(
 ///
 /// # Returns
 /// The computed root hash (compare with expected root to verify)
-pub fn merkle_proof_check<let P: u32>(
-    proof: Proof<P>,
-    leaf: Leaf,
-    hash_fn: HashFn
-) -> Root {
+pub fn merkle_proof_check<let P: u32>(proof: Proof<P>, leaf: Leaf, hash_fn: HashFn) -> Root {
     let mut current_hash = leaf;
 
     for i in 0..P {
