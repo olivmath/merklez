@@ -12,11 +12,11 @@ use crate::types::{HashFn, Leaf, Proof};
 
 /// Find the index of a leaf in an array of leaves
 /// Returns the index if found, or N (out of bounds) if not found
-fn find_leaf_index<let N: u32>(leaves: [Leaf; N], len: u32, target: Leaf) -> u32 {
+fn find_leaf_index<let N: u32>(leaves: [Leaf; N], target: Leaf) -> u32 {
     let mut index: u32 = N; // Default to out of bounds
     let mut found = false;
     for i in 0..N {
-        if (i < len) & (!found) {
+        if !found {
             let mut is_equal = true;
             for j in 0..32 {
                 if leaves[i][j] != target[j] {
@@ -43,12 +43,10 @@ fn up_layer<let N: u32>(leaves: [Leaf; N], len: u32, hash_fn: HashFn) -> ([Leaf;
     for _k in 0..N {
         if i < len {
             if i + 1 < len {
-                // Hash pair of leaves
                 new_layer[new_len] = hash_fn(leaves[i], leaves[i + 1]);
                 new_len += 1;
                 i += 2;
             } else {
-                // Odd leaf, promote to next layer
                 new_layer[new_len] = leaves[i];
                 new_len += 1;
                 i += 1;
@@ -68,7 +66,6 @@ fn up_layer<let N: u32>(leaves: [Leaf; N], len: u32, hash_fn: HashFn) -> ([Leaf;
 ///
 /// # Arguments
 /// * `leaves` - Array of all leaf hashes in the tree
-/// * `len` - Number of actual leaves (must be <= N)
 /// * `leaf` - The leaf to generate a proof for
 /// * `hash_fn` - Hash function to combine two hashes
 ///
@@ -76,26 +73,25 @@ fn up_layer<let N: u32>(leaves: [Leaf; N], len: u32, hash_fn: HashFn) -> ([Leaf;
 /// A Proof struct containing the sibling nodes needed to verify the leaf
 pub fn merkle_proof_mixed<let N: u32, let P: u32>(
     leaves: [Leaf; N],
-    len: u32,
     leaf: Leaf,
     hash_fn: HashFn,
 ) -> Proof<P> {
     let mut proof_nodes: [Node; P] = [Node { data: [0u8; 32], side: Side::left() }; P];
     let mut proof_len: u32 = 0;
 
-    // Handle edge cases: len == 0 or len == 1 means no proof needed
+    // Handle edge cases: N == 0 or N == 1 means no proof needed
     // We use a flag to skip the main logic in these cases
-    let should_process = len > 1;
+    let should_process = N > 1;
 
     if should_process {
         // Find the target leaf index
-        let initial_index = find_leaf_index(leaves, len, leaf);
-        assert(initial_index < len, "Leaf does not exist in the tree");
+        let initial_index = find_leaf_index(leaves, leaf);
+        assert(initial_index < N, "Leaf does not exist in the tree");
 
         // Track current position in the tree
         let mut leaf_index: u32 = initial_index;
         let mut current_leaves: [Leaf; N] = leaves;
-        let mut current_len: u32 = len;
+        let mut current_len: u32 = N;
 
         // Build proof by traversing up the tree layer by layer
         for _level in 0..P {

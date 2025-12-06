@@ -14,26 +14,29 @@ use crate::types::{HashFn, Leaf, Root};
 /// * `leaves` - Array of leaf hashes
 /// * `hash_fn` - Hash function to combine two hashes
 ///
+/// # Type Parameters
+/// * `N` - Number of leaves in the tree
+///
 /// # Returns
 /// The root hash of the Merkle tree
-pub fn merkle_root<let N: u32>(leaves: [Leaf; N], len: u32, hash_fn: HashFn) -> Root {
+pub fn merkle_root<let N: u32>(leaves: [Leaf; N], hash_fn: HashFn) -> Root {
     let mut level: [Leaf; N] = leaves;
     let mut next_level: [Leaf; N] = leaves;
-    let mut curr_len: u32 = len;
+    let mut curr_len: u32 = N;
 
     for _p in 0..N {
-        if curr_len > 1u32 {
-            let mut next_len: u32 = 0u32;
-            let mut i: u32 = 0u32;
+        if curr_len > 1 {
+            let mut next_len: u32 = 0;
+            let mut i: u32 = 0;
             for _k in 0..N {
-                if i >= curr_len {} else if i + 1u32 < curr_len {
-                    next_level[next_len] = hash_fn(level[i], level[i + 1u32]);
-                    next_len += 1u32;
-                    i += 2u32;
+                if i >= curr_len {} else if i + 1 < curr_len {
+                    next_level[next_len] = hash_fn(level[i], level[i + 1]);
+                    next_len += 1;
+                    i += 2;
                 } else {
                     next_level[next_len] = level[i];
-                    next_len += 1u32;
-                    i += 1u32;
+                    next_len += 1;
+                    i += 1;
                 }
             }
             for j in 0..N {
@@ -45,10 +48,10 @@ pub fn merkle_root<let N: u32>(leaves: [Leaf; N], len: u32, hash_fn: HashFn) -> 
         }
     }
 
-    if curr_len == 0u32 {
+    if N == 0 {
         [0u8; 32]
     } else {
-        level[0u32]
+        level[0]
     }
 }
 

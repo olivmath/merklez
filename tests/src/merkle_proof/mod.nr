@@ -115,14 +115,14 @@ fn test_merkle_proof_leaves_even_make_proof() {
         },
     ];
 
-    let proof: Proof<4> = merkle_proof(leaves, 6, target, keccak_hash);
+    let proof: Proof<4> = merkle_proof(leaves, target, keccak_hash);
 
     assert(proof.len == 2);
     assert(proof.nodes[0] == expected_proof[0]);
     assert(proof.nodes[1] == expected_proof[1]);
 
     // Also verify the proof produces the correct root
-    let expected_root = merkle_root(leaves, 6, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
     let computed_root = verify_proof(target, proof, keccak_hash);
     assert(computed_root == expected_root);
 }
@@ -170,7 +170,7 @@ fn test_merkle_proof_leaves_odd_make_proof() {
         },
     ];
 
-    let proof: Proof<4> = merkle_proof(leaves, 5, target, keccak_hash);
+    let proof: Proof<4> = merkle_proof(leaves, target, keccak_hash);
 
     assert(proof.len == 3);
     assert(proof.nodes[0] == expected_proof[0]);
@@ -178,7 +178,7 @@ fn test_merkle_proof_leaves_odd_make_proof() {
     assert(proof.nodes[2] == expected_proof[2]);
 
     // Also verify the proof produces the correct root
-    let expected_root = merkle_root(leaves, 5, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
     let computed_root = verify_proof(target, proof, keccak_hash);
     assert(computed_root == expected_root);
 }
@@ -213,14 +213,14 @@ fn test_merkle_proof_leaves_base_2_make_proof() {
         },
     ];
 
-    let proof: Proof<4> = merkle_proof(leaves, 4, target, keccak_hash);
+    let proof: Proof<4> = merkle_proof(leaves, target, keccak_hash);
 
     assert(proof.len == 2);
     assert(proof.nodes[0] == expected_proof[0]);
     assert(proof.nodes[1] == expected_proof[1]);
 
     // Also verify the proof produces the correct root
-    let expected_root = merkle_root(leaves, 4, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
     let computed_root = verify_proof(target, proof, keccak_hash);
     assert(computed_root == expected_root);
 }
@@ -233,9 +233,9 @@ fn test_merkle_proof_leaves_base_2_make_proof() {
 fn test_merkle_proof_2_leaves_first() {
     let leaves: [Leaf; 2] = [get_leaf_a(), get_leaf_b()];
     let target = get_leaf_a();
-    let expected_root = merkle_root(leaves, 2, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
 
-    let proof: Proof<2> = merkle_proof(leaves, 2, target, keccak_hash);
+    let proof: Proof<2> = merkle_proof(leaves, target, keccak_hash);
 
     assert(proof.len == 1);
     // First leaf (index 0) - sibling is on the right
@@ -250,9 +250,9 @@ fn test_merkle_proof_2_leaves_first() {
 fn test_merkle_proof_2_leaves_second() {
     let leaves: [Leaf; 2] = [get_leaf_a(), get_leaf_b()];
     let target = get_leaf_b();
-    let expected_root = merkle_root(leaves, 2, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
 
-    let proof: Proof<2> = merkle_proof(leaves, 2, target, keccak_hash);
+    let proof: Proof<2> = merkle_proof(leaves, target, keccak_hash);
 
     assert(proof.len == 1);
     // Second leaf (index 1) - sibling is on the left
@@ -268,7 +268,7 @@ fn test_merkle_proof_single_leaf() {
     let leaves: [Leaf; 1] = [get_leaf_a()];
     let target = get_leaf_a();
 
-    let proof: Proof<1> = merkle_proof(leaves, 1, target, keccak_hash);
+    let proof: Proof<1> = merkle_proof(leaves, target, keccak_hash);
 
     // Single leaf tree has no proof nodes
     assert(proof.len == 0);
@@ -278,9 +278,9 @@ fn test_merkle_proof_single_leaf() {
 fn test_merkle_proof_3_leaves() {
     let leaves: [Leaf; 3] = [get_leaf_a(), get_leaf_b(), get_leaf_c()];
     let target = get_leaf_c();
-    let expected_root = merkle_root(leaves, 3, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
 
-    let proof: Proof<3> = merkle_proof(leaves, 3, target, keccak_hash);
+    let proof: Proof<3> = merkle_proof(leaves, target, keccak_hash);
 
     let computed_root = verify_proof(target, proof, keccak_hash);
     assert(computed_root == expected_root);
@@ -289,12 +289,12 @@ fn test_merkle_proof_3_leaves() {
 #[test]
 fn test_merkle_proof_4_leaves_all_positions() {
     let leaves: [Leaf; 4] = [get_leaf_a(), get_leaf_b(), get_leaf_c(), get_leaf_d()];
-    let expected_root = merkle_root(leaves, 4, keccak_hash);
+    let expected_root = merkle_root(leaves, keccak_hash);
 
     // Test all 4 positions
     for i in 0..4 {
         let target = leaves[i];
-        let proof: Proof<4> = merkle_proof(leaves, 4, target, keccak_hash);
+        let proof: Proof<4> = merkle_proof(leaves, target, keccak_hash);
         let computed_root = verify_proof(target, proof, keccak_hash);
         assert(computed_root == expected_root);
     }
