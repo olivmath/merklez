@@ -1,12 +1,12 @@
 // =============================================================================
-// MERKLE CHECK - Verify a Merkle proof and compute the root
+// MERKLE PROOF CHECK - Verify a Merkle proof and compute the root
 // =============================================================================
 
 use crate::side::Side;
 use crate::types::{HashFn, Leaf, Proof, Root};
 
 // =============================================================================
-// MERKLE CHECK - Main function
+// MERKLE PROOF CHECK - Main function
 // =============================================================================
 
 /// Verifies a Merkle proof and computes the root hash
@@ -37,10 +37,10 @@ use crate::types::{HashFn, Leaf, Proof, Root};
 /// ```
 /// let proof: Proof<3> = /* proof for a leaf */;
 /// let leaf: Leaf = /* leaf to verify */;
-/// let root = merkle_check(proof, leaf, hash_fn);
+/// let root = merkle_proof_check(proof, leaf, hash_fn);
 /// // root is the computed Merkle root
 /// ```
-pub fn merkle_check<let P: u32>(proof: Proof<P>, leaf: Leaf, hash_fn: HashFn) -> Root {
+pub fn merkle_proof_check<let P: u32>(proof: Proof<P>, leaf: Leaf, hash_fn: HashFn) -> Root {
     let mut current_hash = leaf;
 
     for i in 0..P {

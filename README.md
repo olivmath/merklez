@@ -345,7 +345,8 @@ See the [`examples/`](./examples/) directory for more usage examples:
 **Basic Usage** (`how_to_use/`):
 - `merkle_root.nr` - Calculate merkle root from leaves
 - `merkle_proof.nr` - Generate merkle proofs for elements
-- `merkle_verify.nr` - Verify merkle proofs
+- `merkle_proof_check.nr` - Verify proofs using low-level API
+- `merkle_verify.nr` - Verify merkle proofs using high-level API
 
 **ZK Proof Patterns** (`how_to_proof/`):
 - `membership_public_root.nr` - Membership proof with public root (whitelist, airdrops, voting)
