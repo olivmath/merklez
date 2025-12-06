@@ -40,3 +40,4 @@ mod utils;
 pub mod merkle_root;
 mod merkle_proof_mixed;
 pub mod merkle_proof;
+pub mod merkle_check;
