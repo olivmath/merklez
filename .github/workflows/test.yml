@@ -29,6 +29,10 @@ jobs:
       - name: Run tests
         run: nargo test --show-output
 
+      - name: Run tests (tests package)
+        working-directory: tests
+        run: nargo test --show-output
+
   format:
     name: Format
     runs-on: ubuntu-latest
