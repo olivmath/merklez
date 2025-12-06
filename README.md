@@ -22,13 +22,6 @@ Add this to your `Nargo.toml`:
 merklez = { tag = "0.4.0", git = "https://github.com/olivmath/merklez", directory = "merklez" }
 ```
 
-Or use it as a local dependency:
-
-```toml
-[dependencies]
-merklez = { path = "../merklez" }
-```
-
 ## Quick Start
 
 ### 1. Calculate Merkle Root
