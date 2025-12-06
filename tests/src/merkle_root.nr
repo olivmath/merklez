@@ -106,4 +106,3 @@ fn test_merkle_root_leaves_base_2_make_root() {
     let result = merkle_root::<4>(setup_leaves, keccak_hash);
     assert(result == setup_root);
 }
-

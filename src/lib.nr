@@ -25,9 +25,9 @@ pub mod types;
 // -----------------------------------------------------------------------------
 
 // Left/right indicator for proof nodes
-mod side;
+pub mod side;
 // Single node in a Merkle proof
-mod node;
+pub mod node;
 
 // -----------------------------------------------------------------------------
 // Utility functions
@@ -38,3 +38,4 @@ mod utils;
 // Core Merkle operations
 // -----------------------------------------------------------------------------
 pub mod merkle_root;
+pub mod merkle_proof;
