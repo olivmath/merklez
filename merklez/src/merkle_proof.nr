@@ -16,7 +16,6 @@ use crate::types::{HashFn, Leaf, Proof};
 ///
 /// # Arguments
 /// * `leaves` - Array of all leaf hashes in the tree
-/// * `len` - Number of actual leaves (must be <= N)
 /// * `leaf` - The leaf to generate a proof for
 /// * `hash_fn` - Hash function to combine two hashes
 ///
@@ -24,20 +23,19 @@ use crate::types::{HashFn, Leaf, Proof};
 /// A Proof struct containing the sibling nodes needed to verify the leaf
 ///
 /// # Type Parameters
-/// * `N` - Maximum capacity for leaves array
-/// * `P` - Maximum capacity for proof nodes (should be log2(N) or more)
+/// * `N` - Number of leaves in the tree
+/// * `P` - Proof capacity (use ceil(log2(N)): N=2→P=1, N=3-4→P=2, N=5-8→P=3, N=9-16→P=4)
 ///
 /// # Example
 /// ```
 /// let leaves: [Leaf; 4] = [leaf_a, leaf_b, leaf_c, leaf_d];
-/// let proof = merkle_proof(leaves, 4, leaf_b, hash_fn);
+/// let proof: Proof<2> = merkle_proof(leaves, leaf_b, hash_fn);
 /// // proof contains the sibling nodes needed to verify leaf_b
 /// ```
 pub fn merkle_proof<let N: u32, let P: u32>(
     leaves: [Leaf; N],
-    len: u32,
     leaf: Leaf,
     hash_fn: HashFn,
 ) -> Proof<P> {
-    merkle_proof_mixed(leaves, len, leaf, hash_fn)
+    merkle_proof_mixed(leaves, leaf, hash_fn)
 }
