@@ -4,35 +4,20 @@
 
 /// Indicates whether a sibling node is on the left (0) or right (1) side
 /// Used in Merkle proofs to determine hash concatenation order
-pub struct Side {
-    pub value: u8, // 0 = left, 1 = right
+
+#[derive(PartialEq, Debug, Clone)]
+pub enum Side {
+    LEFT = 0,
+    RIGHT = 1
 }
 
-impl Side {
-    /// Creates a left side indicator
-    pub fn left() -> Self {
-        Side { value: 0 }
-    }
-
-    /// Creates a right side indicator
-    pub fn right() -> Self {
-        Side { value: 1 }
-    }
-
-    /// Returns true if this is the left side
-    pub fn is_left(self) -> bool {
-        self.value == 0
-    }
-
-    /// Returns true if this is the right side
-    pub fn is_right(self) -> bool {
-        self.value == 1
-    }
-
-    /// Creates a Side from a u8 value (must be 0 or 1)
-    pub fn from_u8(value: u8) -> Self {
-        assert((value == 0) | (value == 1), "Side value must be 0 or 1");
-        Side { value }
+impl From<u8> for Side {
+    fn from(side: u8) -> Self {
+         match num {
+            0 => Side::LEFT,
+            1 => Side::RIGHT,
+            _ => panic!("Invalid value for Side enum, must be either `0` or `1`"),
+        }
     }
 }
 
