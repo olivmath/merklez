@@ -24,7 +24,7 @@ use crate::types::{HashFn, Leaf, Proof};
 ///
 /// # Type Parameters
 /// * `N` - Number of leaves in the tree
-/// * `P` - Proof capacity (use ceil(log2(N)): N=2→P=1, N=3-4→P=2, N=5-8→P=3, N=9-16→P=4)
+/// * `P` - Proof capacity (use ceil(log2(N)): N=2->P=1, N=3-4->P=2, N=5-8->P=3, N=9-16->P=4)
 ///
 /// # Example
 /// ```
