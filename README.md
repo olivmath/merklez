@@ -188,10 +188,10 @@ fn main() {
     let leaves: [Leaf; 4] = [leaf_a, leaf_b, leaf_c, leaf_d];
 
     // Calculate root directly
-    let root = merkle_root(leaves, 4, my_hash);
+    let root = merkle_root(leaves, my_hash);
 
-    // Generate proof for leaf at index 2
-    let proof: Proof<8> = merkle_proof(leaves, 4, 2, my_hash);
+    // Generate proof for leaf_c
+    let proof: Proof<2> = merkle_proof(leaves, leaf_c, my_hash);
 
     // Verify proof
     let computed = merkle_proof_check(proof, leaf_c, my_hash);
@@ -252,14 +252,15 @@ Calculates the merkle root from an array of leaves.
 ```noir
 pub fn merkle_root<let N: u32>(
     leaves: [Leaf; N],
-    leaves_len: u32,
     hash_fn: HashFn
 ) -> Root
 ```
 
+**Type Parameters:**
+- `N`: Number of leaves in the tree
+
 **Parameters:**
 - `leaves`: Array of leaf hashes
-- `leaves_len`: Actual number of leaves (array might be larger)
 - `hash_fn`: Custom hash function to combine two hashes
 
 **Returns:** The merkle root hash
@@ -271,16 +272,18 @@ Generates a merkle proof for a specific leaf.
 ```noir
 pub fn merkle_proof<let N: u32, let P: u32>(
     leaves: [Leaf; N],
-    leaves_len: u32,
-    leaf_index: u32,
+    leaf: Leaf,
     hash_fn: HashFn
 ) -> Proof<P>
 ```
 
+**Type Parameters:**
+- `N`: Number of leaves in the tree
+- `P`: Proof capacity (use `ceil(log2(N))`): N=2→P=1, N=3-4→P=2, N=5-8→P=3, N=9-16→P=4
+
 **Parameters:**
 - `leaves`: Array of all leaves
-- `leaves_len`: Actual number of leaves
-- `leaf_index`: Index of the leaf to prove
+- `leaf`: The leaf to generate a proof for
 - `hash_fn`: Custom hash function
 
 **Returns:** A Proof struct containing the path from leaf to root
