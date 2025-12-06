@@ -1,5 +1,5 @@
 use dep::keccak256::keccak256;
-use dep::merklez::merkle_check::merkle_check;
+use dep::merklez::merkle_check::merkle_proof_check;
 use dep::merklez::node::Node;
 use dep::merklez::side::Side;
 use dep::merklez::types::{Hash, Leaf, Proof, Root};
@@ -46,7 +46,7 @@ fn merkle_proof_check_leaves_even() {
 
     let proof = Proof { nodes: [node1, node2], len: 2 };
 
-    let result = merkle_check(proof, setup_leaf, keccak_hash);
+    let result = merkle_proof_check(proof, setup_leaf, keccak_hash);
 
     assert(result == setup_root);
 }
@@ -92,7 +92,7 @@ fn merkle_proof_check_leaves_odd() {
 
     let proof = Proof { nodes: [node1, node2, node3], len: 3 };
 
-    let result = merkle_check(proof, setup_leaf, keccak_hash);
+    let result = merkle_proof_check(proof, setup_leaf, keccak_hash);
 
     assert(result == setup_root);
 }
@@ -130,7 +130,7 @@ fn merkle_proof_check_leaves_base_2() {
 
     let proof = Proof { nodes: [node1, node2], len: 2 };
 
-    let result = merkle_check(proof, setup_leaf, keccak_hash);
+    let result = merkle_proof_check(proof, setup_leaf, keccak_hash);
 
     assert(result == setup_root);
 }
