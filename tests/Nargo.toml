@@ -5,6 +5,5 @@ type = "lib"
 authors = ["olivmath"]
 
 [dependencies]
-# merklez = { tag = "0.3.0", git = "https://github.com/olivmath/merklez" }
 merklez = { path = "../merklez" }
 keccak256 = { tag = "v0.1.0", git = "https://github.com/noir-lang/keccak256" }

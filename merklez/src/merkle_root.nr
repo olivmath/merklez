@@ -26,8 +26,7 @@ pub fn merkle_root<let N: u32>(leaves: [Leaf; N], hash_fn: HashFn) -> Root {
             let mut next_len: u32 = 0u32;
             let mut i: u32 = 0u32;
             for _k in 0..N {
-                if i >= curr_len {
-                } else if i + 1u32 < curr_len {
+                if i >= curr_len {} else if i + 1u32 < curr_len {
                     next_level[next_len] = hash_fn(level[i], level[i + 1u32]);
                     next_len += 1u32;
                     i += 2u32;
@@ -46,7 +45,11 @@ pub fn merkle_root<let N: u32>(leaves: [Leaf; N], hash_fn: HashFn) -> Root {
         }
     }
 
-    if curr_len == 0u32 { [0u8; 32] } else { level[0u32] }
+    if curr_len == 0u32 {
+        [0u8; 32]
+    } else {
+        level[0u32]
+    }
 }
 
 // tests moved to a separate test crate
