@@ -1,5 +1,2 @@
-[package]
-name = "merklez"
-version = "0.3.0"
-type = "lib"
-authors = ["olivmath"]
+[workspace]
+members = ["merklez", "tests"]
