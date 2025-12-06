@@ -337,15 +337,6 @@ Run the tests with:
 nargo test
 ```
 
-## Comparison with merkletreers
-
-| Feature | merkletreers (Rust) | merklez (Noir) |
-|---------|---------------------|----------------|
-| Default hash | Keccak-256 | None (you provide) |
-| Hash flexibility | Trait-based | Function parameter |
-| Dynamic vectors | Yes | No (bounded arrays) |
-| External deps | Yes (tiny-keccak) | None |
-| Mixed trees | Yes | Not yet |
 
 ## Examples
 
