@@ -2,6 +2,8 @@
 // TYPES - Core type definitions for the Merkle Tree library
 // =============================================================================
 
+use crate::node::Node;
+
 /// A 32-byte hash value (standard cryptographic hash size)
 pub type Hash = [u8; 32];
 
@@ -10,6 +12,9 @@ pub type Leaf = Hash;
 
 /// The root hash of a Merkle Tree (alias for Hash)
 pub type Root = Hash;
+
+/// A Merkle proof path (vector of sibling nodes)
+pub type Proof = Vec<Node>;
 
 /// Hash function signature: takes two hashes and produces a combined hash
 /// This allows users to provide their own hash function (Poseidon, Pedersen, etc.)

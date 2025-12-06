@@ -14,16 +14,18 @@ pub fn is_power_of_2(n: u32) -> bool {
     }
 }
 
+use crate::types::Hash;
+
 // =============================================================================
 // TESTS
 // =============================================================================
 
 #[test]
 fn test_is_power_of_2_valid() {
-    assert(is_power_of_2(1));  // 2^0
-    assert(is_power_of_2(2));  // 2^1
-    assert(is_power_of_2(4));  // 2^2
-    assert(is_power_of_2(8));  // 2^3
+    assert(is_power_of_2(1)); // 2^0
+    assert(is_power_of_2(2)); // 2^1
+    assert(is_power_of_2(4)); // 2^2
+    assert(is_power_of_2(8)); // 2^3
     assert(is_power_of_2(16)); // 2^4
     assert(is_power_of_2(32)); // 2^5
 }

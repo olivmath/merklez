@@ -18,14 +18,16 @@
 // -----------------------------------------------------------------------------
 // Core type definitions
 // -----------------------------------------------------------------------------
-mod types;
+pub mod types;
 
 // -----------------------------------------------------------------------------
 // Data structures
 // -----------------------------------------------------------------------------
-mod side;   // Left/right indicator for proof nodes
-mod node;   // Single node in a Merkle proof
-mod proof;  // Collection of proof nodes
+
+// Left/right indicator for proof nodes
+mod side;
+// Single node in a Merkle proof
+mod node;
 
 // -----------------------------------------------------------------------------
 // Utility functions
@@ -35,27 +37,4 @@ mod utils;
 // -----------------------------------------------------------------------------
 // Core Merkle operations
 // -----------------------------------------------------------------------------
-mod merkle; // merkle_root, merkle_proof, merkle_proof_check
-
-// -----------------------------------------------------------------------------
-// High-level API
-// -----------------------------------------------------------------------------
-mod tree;   // MerkleTree struct with convenient methods
-
-// =============================================================================
-// PUBLIC EXPORTS
-// =============================================================================
-
-// Types
-pub use types::{Hash, Leaf, Root, HashFn};
-
-// Data structures
-pub use side::Side;
-pub use node::Node;
-pub use proof::Proof;
-
-// Core functions
-pub use merkle::{merkle_root, merkle_proof, merkle_proof_check};
-
-// High-level API
-pub use tree::MerkleTree;
+pub mod merkle_root;
