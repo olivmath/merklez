@@ -16,10 +16,10 @@ use crate::types::{HashFn, Leaf, Root};
 ///
 /// # Returns
 /// The root hash of the Merkle tree
-pub fn merkle_root<let N: u32>(leaves: [Leaf; N], hash_fn: HashFn) -> Root {
+pub fn merkle_root<let N: u32>(leaves: [Leaf; N], len: u32, hash_fn: HashFn) -> Root {
     let mut level: [Leaf; N] = leaves;
     let mut next_level: [Leaf; N] = leaves;
-    let mut curr_len: u32 = N;
+    let mut curr_len: u32 = len;
 
     for _p in 0..N {
         if curr_len > 1u32 {

@@ -13,8 +13,11 @@ pub type Leaf = Hash;
 /// The root hash of a Merkle Tree (alias for Hash)
 pub type Root = Hash;
 
-/// A Merkle proof path (vector of sibling nodes)
-pub type Proof = Vec<Node>;
+/// A Merkle proof path with bounded capacity
+pub struct Proof<let P: u32> {
+    pub nodes: [Node; P],
+    pub len: u32,
+}
 
 /// Hash function signature: takes two hashes and produces a combined hash
 /// This allows users to provide their own hash function (Poseidon, Pedersen, etc.)

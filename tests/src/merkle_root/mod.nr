@@ -43,7 +43,7 @@ fn test_merkle_root_leaves_even_make_root() {
             183, 166, 100, 162, 191, 148, 141, 180, 250, 145, 150, 4, 131,
         ],
     ];
-    let result = merkle_root::<6>(setup_leaves, keccak_hash);
+    let result = merkle_root::<6>(setup_leaves, 6u32, keccak_hash);
     assert(result == setup_root);
 }
 
@@ -75,7 +75,7 @@ fn test_merkle_root_leaves_odd_make_root() {
             175, 60, 142, 14, 179, 18, 239, 29, 51, 130, 231, 97,
         ],
     ];
-    let result = merkle_root::<5>(setup_leaves, keccak_hash);
+    let result = merkle_root::<5>(setup_leaves, 5u32, keccak_hash);
     assert(result == setup_root);
 }
 
@@ -103,6 +103,6 @@ fn test_merkle_root_leaves_base_2_make_root() {
             225, 155, 252, 10, 161, 10, 182, 116, 255, 117, 179, 210, 243,
         ],
     ];
-    let result = merkle_root::<4>(setup_leaves, keccak_hash);
+    let result = merkle_root::<4>(setup_leaves, 4u32, keccak_hash);
     assert(result == setup_root);
 }
