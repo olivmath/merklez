@@ -19,7 +19,7 @@ Add this to your `Nargo.toml`:
 
 ```toml
 [dependencies]
-merklez = { tag = "0.4.0", git = "https://github.com/olivmath/merklez", directory = "merklez" }
+merklez = { tag = "0.5.0", git = "https://github.com/olivmath/merklez", directory = "merklez" }
 ```
 
 ## Quick Start
