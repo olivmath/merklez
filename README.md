@@ -4,13 +4,12 @@
   </a>
 </p>
 
-<p align="center">The simple and easy way to Merkle Tree + ZK.</p>
+<p align="center">The simple and easy way to made Merkle Tree + ZK.</p>
 
 ---
 
 [![CI Tests](https://github.com/olivmath/merklez/actions/workflows/test.yml/badge.svg)](https://github.com/olivmath/merklez/actions/workflows/test.yml)
 
-A Merkle Tree implementation in Noir - Port from the Rust library [merkletreers](https://github.com/olivmath/merkletreers).
 
 ## Features
 
@@ -365,11 +364,11 @@ Contributions are welcome! Please open an issue or PR.
 
 ## License
 
-Same as original merkletreers library.
+MIT
 
 ## Credits
 
-This library is a port of [merkletreers](https://github.com/olivmath/merkletreers) by [@olivmath](https://github.com/olivmath).
+A Merkle Tree implementation in Noir - Port from the Rust library [merkletreers](https://github.com/olivmath/merkletreers) by [@olivmath](https://github.com/olivmath).
 
 ## References
 
