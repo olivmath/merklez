@@ -1,4 +1,12 @@
-# merklez
+<p align="center">
+  <a href="https://pypi.org/project/merkly/">
+    <img alt="Merkly" src="https://github.com/user-attachments/assets/59eecea5-6e6d-4ccd-952c-1f0aae147cc5" width="1000">
+  </a>
+</p>
+
+<p align="center">The simple and easy way to Merkle Tree + ZK.</p>
+
+---
 
 [![CI Tests](https://github.com/olivmath/merklez/actions/workflows/test.yml/badge.svg)](https://github.com/olivmath/merklez/actions/workflows/test.yml)
 
